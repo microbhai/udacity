@@ -20,6 +20,47 @@ df2[((df2['group'] == 'treatment') == (df2['landing_page'] == 'new_page')) == Fa
 df2.query('user_id==773192')
 df2 = df2.drop(1899, axis=0)
 
+# ======== A/B test===========
+
+diff = []
+size_df2 = df2.shape[0]
+for _ in range(10000):
+    sample = df2.sample(size_df2, replace=True)
+    nm = sample.query('landing_page == "new_page"')['converted'].mean()
+    om = sample.query('landing_page == "old_page"')['converted'].mean()
+    diff.append(nm-om)
+
+plt.hist(diff);
+observed_diff = df2.query('landing_page=="new_page"').converted.mean()-df2.query('landing_page=="old_page"').converted.mean()
+diff = np.array(diff)
+sim_null = np.random.normal(0, diff.std(), diff.size)
+plt.hist(sim_null);
+plt.axvline(x=observed_diff,color='red')
+
+
+new_page_converted = np.random.choice([0, 1], size=nnew, p=[1-df2.converted.mean(), df2.converted.mean()])
+new_page_converted.mean()
+
+old_page_converted = np.random.choice([0, 1], size=nnew, p=[1-df2.converted.mean(), df2.converted.mean()])
+old_page_converted.mean()
+
+new_page_converted.mean()-old_page_converted.mean()
+
+p_diffs = []
+
+bias_rate = df2.converted.mean()
+
+for _ in range(10000):
+    new_page_sim = np.random.choice([0, 1], size=nnew, p=[1-bias_rate, bias_rate])
+    old_page_sim = np.random.choice([0, 1], size=nnew, p=[1-bias_rate, bias_rate])
+    p_diffs.append(new_page_sim.mean()-old_page_sim.mean())
+
+p_diffs = np.array(p_diffs)
+plt.hist(p_diffs);
+plt.axvline(x=observed_diff,color='red')
+
+(p_diffs>observed_diff).mean()
+
 # ======== Using proportions_ztest ===========
 convert_old = df2.query('converted == 1 and landing_page == "old_page"').user_id.count()
 convert_new = df2.query('converted == 1 and landing_page == "new_page"').user_id.count()
