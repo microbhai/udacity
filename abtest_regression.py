@@ -37,7 +37,7 @@ sim_null = np.random.normal(0, diff.std(), diff.size)
 plt.hist(sim_null);
 plt.axvline(x=observed_diff,color='red')
 
-
+# Simulate transactions
 new_page_converted = np.random.choice([0, 1], size=nnew, p=[1-df2.converted.mean(), df2.converted.mean()])
 new_page_converted.mean()
 
